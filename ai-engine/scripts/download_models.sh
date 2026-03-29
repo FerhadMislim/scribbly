@@ -30,7 +30,9 @@ fi
 # Create model directories
 mkdir -p "$MODELS_DIR/sdxl"
 mkdir -p "$MODELS_DIR/sd15"
-mkdir -p "$MODELS_DIR/controlnet"
+mkdir -p "$MODELS_DIR/controlnet_scribble"
+mkdir -p "$MODELS_DIR/controlnet_canny"
+mkdir -p "$MODELS_DIR/controlnet_sdxl"
 
 echo ""
 echo "Downloading Stable Diffusion XL 1.0 (~6.5GB)..."
@@ -50,13 +52,19 @@ echo ""
 echo "Downloading ControlNet Scribble (~500MB)..."
 echo "-------------------------------------------"
 huggingface-cli download lllyasviel/control_v11p_sd15_scribble \
-    --local-dir "$MODELS_DIR/controlnet"
+    --local-dir "$MODELS_DIR/controlnet_scribble"
 
 echo ""
 echo "Downloading ControlNet Canny (~500MB)..."
 echo "-------------------------------------------"
 huggingface-cli download lllyasviel/control_v11p_sd15_canny \
-    --local-dir "$MODELS_DIR/controlnet"
+    --local-dir "$MODELS_DIR/controlnet_canny"
+
+echo ""
+echo "Downloading ControlNet for SDXL (~1GB)..."
+echo "-------------------------------------------"
+huggingface-cli download diffusers/controlnet-canny-sdxl-1.0 \
+    --local-dir "$MODELS_DIR/controlnet_sdxl"
 
 echo ""
 echo "==========================================="
@@ -68,8 +76,9 @@ echo ""
 echo "Verify downloads:"
 echo "  ls -la $MODELS_DIR/sdxl/"
 echo "  ls -la $MODELS_DIR/sd15/"
-echo "  ls -la $MODELS_DIR/controlnet/"
+echo "  ls -la $MODELS_DIR/controlnet_scribble/"
+echo "  ls -la $MODELS_DIR/controlnet_canny/"
 echo ""
 echo "Next steps:"
 echo "  1. Run test inference: python ai-engine/test_inference.py"
-echo "  2. Download ControlNet models (TICKET-009)"
+echo "  2. Run ControlNet test: python ai-engine/test_controlnet.py"
