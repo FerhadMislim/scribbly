@@ -6,19 +6,20 @@ FastAPI application providing REST API for Scribbly.
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.13+
 - PostgreSQL 16
 - Redis 7
 
 ### Setup
 
 ```bash
-# Create virtual environment
-python3.13 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Install uv if not already installed
+pip install uv
 
-# Install dependencies
-pip install -r requirements.txt
+# Create virtual environment and install dependencies
+uv venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv sync
 
 # Copy environment variables
 cp .env.example .env

@@ -52,6 +52,9 @@ help:
 .PHONY: setup
 setup: setup-backend setup-web
 	@echo "$(GREEN)✓ All dependencies installed!$(NC)"
+	@echo "$(YELLOW)Note:$(NC)"
+	@echo "  - Backend uses uv (faster than pip)"
+	@echo "  - Run 'source backend/.venv/bin/activate' to activate backend venv"
 	@echo "$(YELLOW)Next steps:$(NC)"
 	@echo "  1. Copy environment files:"
 	@echo "     cp backend/.env.example backend/.env"
@@ -60,9 +63,9 @@ setup: setup-backend setup-web
 
 .PHONY: setup-backend
 setup-backend:
-	@echo "$(BLUE)Setting up backend...$(NC)"
-	@cd backend && python3 -m venv .venv
-	@cd backend && . .venv/bin/activate && pip install -r requirements.txt
+	@echo "$(BLUE)Setting up backend with uv (Python 3.13)...$(NC)"
+	@cd backend && uv venv .venv --python python3.13
+	@cd backend && uv sync
 	@echo "$(GREEN)✓ Backend dependencies installed$(NC)"
 
 .PHONY: setup-web

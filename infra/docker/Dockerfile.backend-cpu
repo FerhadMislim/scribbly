@@ -4,7 +4,7 @@
 # ===========================================
 # Build: docker build -f infra/docker/Dockerfile.backend-cpu -t scribbly/backend-cpu .
 
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 # ---------------------
 # Labels
@@ -18,8 +18,8 @@ LABEL version="1.0.0"
 # ---------------------
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
 # ---------------------
 # System dependencies
@@ -31,14 +31,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ---------------------
+# Install uv
+# ---------------------
+RUN pip install uv
+
+# ---------------------
 # Python setup
 # ---------------------
 WORKDIR /app
 
 # ---------------------
 # Install Python dependencies
-COPY backend/requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY backend/pyproject.toml /app/pyproject.toml
+RUN uv sync --frozen --no-dev
 
 # ---------------------
 # Copy application

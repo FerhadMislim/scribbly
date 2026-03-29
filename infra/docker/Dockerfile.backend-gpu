@@ -19,7 +19,9 @@ LABEL version="1.0.0"
 # ---------------------
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    DEBIAN_FRONTEND=noninteractive
+    DEBIAN_FRONTEND=noninteractive \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
 # ---------------------
 # System dependencies
@@ -36,6 +38,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 
 # ---------------------
+# Install uv
+# ---------------------
+RUN pip install uv
+
+# ---------------------
 # Python setup
 # ---------------------
 WORKDIR /app
@@ -50,8 +57,8 @@ RUN pip install --no-cache-dir \
 
 # ---------------------
 # Install Python dependencies
-COPY backend/requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY backend/pyproject.toml /app/pyproject.toml
+RUN uv sync --frozen --no-dev
 
 # ---------------------
 # Copy application
