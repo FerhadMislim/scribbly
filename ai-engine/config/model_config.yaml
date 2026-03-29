@@ -1,0 +1,94 @@
+# ===========================================
+# Scribbly AI Model Configuration
+# ===========================================
+
+models:
+  # ---------------------
+  # Stable Diffusion XL 1.0
+  # ---------------------
+  - id: sdxl_10
+    name: Stable Diffusion XL 1.0
+    path: models/sdxl/
+    filename: sd_xl_base_1.0.safetensors
+    size_gb: 6.5
+    min_vram_gb: 10
+    source: stabilityai/stable-diffusion-xl-base-1.0
+    sha256: ""
+    recommended_steps: 30
+    guidance_scale: 7.5
+    description: "Primary model for high-quality generations"
+
+  # ---------------------
+  # Stable Diffusion 1.5
+  # ---------------------
+  - id: sd15
+    name: Stable Diffusion 1.5
+    path: models/sd15/
+    filename: v1-5-pruned.safetensors
+    size_gb: 2.0
+    min_vram_gb: 4
+    source: runwayml/stable-diffusion-v1-5
+    sha256: ""
+    recommended_steps: 25
+    guidance_scale: 7.5
+    description: "Fallback model for low-VRAM environments"
+
+controlnet:
+  # ---------------------
+  # ControlNet Scribble
+  # ---------------------
+  - id: cn_scribble
+    name: ControlNet Scribble
+    path: models/controlnet/
+    filename: control_v11p_sd15_scribble.safetensors
+    size_mb: 500
+    min_vram_gb: 2
+    source: lllyasviel/control_v11p_sd15_scribble
+    sha256: ""
+    description: "Best for child drawings - soft edge detection"
+
+  # ---------------------
+  # ControlNet Canny
+  # ---------------------
+  - id: cn_canny
+    name: ControlNet Canny
+    path: models/controlnet/
+    filename: control_v11p_sd15_canny.safetensors
+    size_mb: 500
+    min_vram_gb: 2
+    source: lllyasviel/control_v11p_sd15_canny
+    sha256: ""
+    description: "Precise edge detection for clean line art"
+
+# ---------------------
+# Style LoRAs (placeholder)
+# ---------------------
+loras: []
+
+# ---------------------
+# Download Settings
+# ---------------------
+download:
+  use_huggingface_cli: true
+  requires_auth: false  # Set to true for gated models
+  max_retries: 3
+  verify_checksums: true
+
+# ---------------------
+# Inference Settings
+# ---------------------
+inference:
+  default_device: "cuda"
+  fallback_device: "cpu"
+  enable_xformers: true
+  enable_vae_slicing: true
+  torch_dtype: "float16"  # float16 for GPU, float32 for CPU
+
+# ---------------------
+# Generation Defaults
+# ---------------------
+generation:
+  default_steps: 30
+  default_guidance_scale: 7.5
+  max_image_size: 1024
+  default_image_size: 512
