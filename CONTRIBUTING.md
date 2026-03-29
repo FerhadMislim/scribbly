@@ -52,12 +52,31 @@ docs: update README with iOS setup steps
 | Platform | Tool | Config |
 |----------|------|--------|
 | Python | Ruff (lint + format) | `pyproject.toml` |
-| TypeScript | ESLint + Prettier | `.eslintrc` / `.prettierrc` |
+| TypeScript | ESLint + Prettier | `eslint.config.js` / `.prettierrc` |
 | Swift | SwiftLint | `.swiftlint.yml` |
 
-Pre-commit hooks run automatically — install with:
+### Pre-commit Hooks
+
+#### Python (backend)
 ```bash
 pip install pre-commit && pre-commit install
+```
+
+#### JavaScript/TypeScript (web)
+```bash
+cd web && npm install
+npm run prepare  # Initializes Husky
+```
+
+### Running Linters
+
+```bash
+# Python
+make lint
+
+# Web
+cd web && npm run lint
+cd web && npm run format
 ```
 
 ---

@@ -1,0 +1,12 @@
+#!/bin/sh
+# Husky pre-commit hook for Scribbly Web
+
+echo "Running pre-commit checks..."
+
+# Run linting
+npm run lint
+
+# Run format check
+npm run format:check
+
+echo "Pre-commit checks passed!"
