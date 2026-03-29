@@ -50,13 +50,13 @@ RUN pip install --no-cache-dir \
 
 # ---------------------
 # Install Python dependencies
-COPY requirements.txt /app/requirements.txt
+COPY backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # ---------------------
 # Copy application
 # ---------------------
-COPY app/ /app/
+COPY backend/app/ /app/
 
 # ---------------------
 # Expose port

@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "local"
 
     API_V1_PREFIX: str = "/api/v1"
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
 
     DATABASE_URL: str = "postgresql+asyncpg://artuser:artpass@localhost:5432/scribbly"
     REDIS_URL: str = "redis://localhost:6379/0"
