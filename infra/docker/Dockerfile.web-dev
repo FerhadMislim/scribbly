@@ -1,0 +1,22 @@
+# ===========================================
+# Scribbly Web - Docker Image (Dev Mode)
+# For local development with hot reload
+# ===========================================
+# Build: docker build -f infra/docker/Dockerfile.web-dev -t scribbly/web-dev .
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY web/package*.json ./
+RUN npm ci
+
+# Copy source
+COPY web/ ./
+
+# Expose port
+EXPOSE 3000
+
+# Start dev server
+CMD ["npm", "run", "dev", "--", "--host"]

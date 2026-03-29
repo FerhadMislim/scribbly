@@ -70,8 +70,8 @@ services:
   # ---------------------
   backend:
     build:
-      context: ./backend
-      dockerfile: ../infra/docker/Dockerfile.backend-cpu
+      context: .
+      dockerfile: infra/docker/Dockerfile.backend-cpu
     container_name: scribbly-backend
     restart: unless-stopped
     ports:
@@ -96,11 +96,11 @@ services:
   # Web Frontend (dev mode)
   # ---------------------
   web:
-    image: node:20-alpine
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web-dev
     container_name: scribbly-web
     restart: unless-stopped
-    working_dir: /app
-    command: npm run dev -- --host
     ports:
       - "3000:3000"
     env_file:
@@ -119,8 +119,8 @@ services:
   # Uncomment for GPU inference
   # celery-worker:
   #   build:
-  #     context: ./backend
-  #     dockerfile: ../infra/docker/Dockerfile.backend-gpu
+  #     context: .
+  #     dockerfile: infra/docker/Dockerfile.backend-gpu
   #   container_name: scribbly-celery
   #   restart: unless-stopped
   #   env_file:
