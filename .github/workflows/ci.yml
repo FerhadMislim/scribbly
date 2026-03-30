@@ -75,7 +75,7 @@ jobs:
         run: cd web && npm install
 
       - name: Run tests
-        run: cd web && npm test -- --coverage
+        run: cd web && npm test
 
   # test-swift:
   #   name: iOS Tests
