@@ -72,7 +72,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: cd web && npm ci
+        run: cd web && npm install
 
       - name: Run tests
         run: cd web && npm test -- --coverage
