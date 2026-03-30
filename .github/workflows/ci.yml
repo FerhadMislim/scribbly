@@ -43,21 +43,23 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install uv
+        run: pip install uv
+
       - name: Install dependencies
         run: |
           cd backend
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio pytest-cov
+          uv sync
 
-      - name: Run tests
+      - name: Run AI Engine tests
         run: |
           cd backend
-          pytest --cov=app --cov-report=xml
+          uv run pytest ../ai-engine/tests/ -v
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         with:
-          file: ./backend/coverage.xml
+          file: ./coverage.xml
 
   test-frontend:
     name: Frontend Tests

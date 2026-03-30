@@ -81,7 +81,6 @@ ensure_newline_before_comments = true
 line_length = 88
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "--strict-markers --tb=short"
 
