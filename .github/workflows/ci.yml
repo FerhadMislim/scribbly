@@ -28,7 +28,7 @@ jobs:
       - name: Check JavaScript/TypeScript
         run: |
           cd web
-          npm ci
+          npm install
           npm run lint
 
   test-backend:
