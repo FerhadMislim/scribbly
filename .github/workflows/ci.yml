@@ -43,18 +43,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install uv
-        run: pip install uv
-
       - name: Install dependencies
         run: |
           cd backend
-          uv sync --all-extras
+          pip install -e .
+          pip install pytest pytest-asyncio pytest-cov torch diffusers accelerate opencv-python
 
       - name: Run AI Engine tests
         run: |
           cd backend
-          PYTHONPATH=../.. uv run pytest ../ai-engine/tests/ -v
+          PYTHONPATH=.. pytest ../ai-engine/tests/ -v
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
