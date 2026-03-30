@@ -9,5 +9,15 @@ try:
 except ImportError:
     from pipeline import InferencePipeline, create_pipeline
 
-__all__ = ["InferencePipeline", "create_pipeline"]
+try:
+    from ai_engine.style_manager import StyleManager, create_style_manager
+except ImportError:
+    from style_manager import StyleManager, create_style_manager
+
+__all__ = [
+    "InferencePipeline",
+    "create_pipeline", 
+    "StyleManager",
+    "create_style_manager",
+]
 __version__ = "1.0.0"

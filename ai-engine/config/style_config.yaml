@@ -1,0 +1,159 @@
+# ===========================================
+# Scribbly Art Style Configuration
+# ===========================================
+# Defines available art styles for AI generation
+
+styles:
+  # ---------------------
+  # Pixar 3D Style
+  # ---------------------
+  - id: pixar_3d
+    display_name: "Pixar 3D"
+    description: "Warm 3D animated character with soft lighting"
+    positive_prompt: >
+      pixar animation style, 3d render, cute character, warm studio lighting,
+      subsurface scattering, high quality, child-friendly, vibrant colors,
+      smooth textures, beautiful lighting, detailed face
+    negative_prompt: >
+      dark, scary, violent, ugly, deformed, realistic photo, nsfw,
+      horror, gore, blood, distorted, low quality, blurry
+    recommended_steps: 30
+    guidance_scale: 7.5
+    recommended_model: sdxl
+    thumbnail_url: "/docs/style-samples/pixar_3d.png"
+
+  # ---------------------
+  # Anime / Ghibli Style
+  # ---------------------
+  - id: anime
+    display_name: "Anime"
+    description: "Studio Ghibli-inspired hand-painted animation"
+    positive_prompt: >
+      anime style, studio ghibli inspired, hand painted, anime artwork,
+      soft watercolor texture, expressive eyes, detailed background,
+      traditional 2d animation, japanese art style, vibrant nature scenes,
+      whimsical, magical atmosphere
+    negative_prompt: >
+      dark, scary, violent, ugly, deformed, realistic photo, nsfw,
+      horror, gore, 3d render, western animation style, low quality
+    recommended_steps: 25
+    guidance_scale: 8.0
+    recommended_model: sd15
+    thumbnail_url: "/docs/style-samples/anime.png"
+
+  # ---------------------
+  # Storybook Illustration
+  # ---------------------
+  - id: storybook
+    display_name: "Storybook"
+    description: "Classic children's book illustration"
+    positive_prompt: >
+      children's book illustration, soft watercolor, gentle colors,
+      hand drawn, vintage storybook style, delicate lines, whimsical,
+      sweet and charming, fairy tale aesthetic, soft edges, pastel palette
+    negative_prompt: >
+      dark, scary, violent, ugly, deformed, realistic photo, nsfw,
+      horror, modern, digital art, sharp edges, bright neon colors
+    recommended_steps: 25
+    guidance_scale: 7.0
+    recommended_model: sd15
+    thumbnail_url: "/docs/style-samples/storybook.png"
+
+  # ---------------------
+  # Soft Illustration
+  # ---------------------
+  - id: soft_illustration
+    display_name: "Soft Illustration"
+    description: "Modern flat design with pastel colors"
+    positive_prompt: >
+      soft illustration, flat design, pastel colors, vector art style,
+      modern children's book, clean lines, minimalist, kawaii,
+      cute and friendly, simple shapes, gentle gradients
+    negative_prompt: >
+      dark, scary, violent, ugly, deformed, realistic photo, nsfw,
+      horror, complex shading, photorealistic, gritty
+    recommended_steps: 20
+    guidance_scale: 6.5
+    recommended_model: sd15
+    thumbnail_url: "/docs/style-samples/soft_illustration.png"
+
+  # ---------------------
+  # Colored Pencil
+  # ---------------------
+  - id: sketch_colored
+    display_name: "Colored Pencil"
+    description: "Colored pencil drawing preserving sketch feel"
+    positive_prompt: >
+      colored pencil art, hand drawn, sketch style, crayon texture,
+      childlike drawing, imperfect lines, vibrant colored pencil strokes,
+      paper texture visible, whimsical, joyful, naive art style
+    negative_prompt: >
+      dark, scary, violent, ugly, deformed, realistic photo, nsfw,
+      horror, perfect smooth lines, digital art, 3d render
+    recommended_steps: 25
+    guidance_scale: 7.0
+    recommended_model: sd15
+    thumbnail_url: "/docs/style-samples/sketch_colored.png"
+
+  # ---------------------
+  # Watercolor Paint
+  # ---------------------
+  - id: watercolor
+    display_name: "Watercolor"
+    description: "Beautiful watercolor painting effect"
+    positive_prompt: >
+      watercolor painting, wet on wet technique, flowing colors,
+      soft edges, painterly, artistic, delicate watercolor effect,
+      light and airy, beautiful color mixing, artistic expression
+    negative_prompt: >
+      dark, scary, violent, ugly, deformed, realistic photo, nsfw,
+      horror, sharp edges, digital, flat colors, vector style
+    recommended_steps: 30
+    guidance_scale: 7.5
+    recommended_model: sd15
+    thumbnail_url: "/docs/style-samples/watercolor.png"
+
+  # ---------------------
+  # Comic Book
+  # ---------------------
+  - id: comic
+    display_name: "Comic Book"
+    description: "Bold comic book illustration"
+    positive_prompt: >
+      comic book style, bold ink lines, vibrant colors, marvel dc style,
+      dynamic pose, action scene, superhero aesthetic, panel layout,
+      halftone dots, pop art, graphic novel style
+    negative_prompt: >
+      dark, scary, violent, ugly, deformed realistic photo, nsfw,
+      horror, gore, overly血腥, black and white only, watercolor
+    recommended_steps: 25
+    guidance_scale: 8.0
+    recommended_model: sd15
+    thumbnail_url: "/docs/style-samples/comic.png"
+
+# ---------------------
+# Default Generation Settings
+# ---------------------
+defaults:
+  num_images: 1
+  image_size: 512
+  seed: null  # null = random
+
+# ---------------------
+# Safety Settings
+# ---------------------
+safety:
+  # Terms always included in negative prompt
+  always_include:
+    - scary
+    - violent
+    - horror
+    - nsfw
+    - gore
+    - deformed
+  
+  # Enable content filtering
+  filter_prompts: true
+  
+  # Minimum age appropriate
+  child_safe_only: true
