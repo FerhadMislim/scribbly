@@ -33,7 +33,7 @@
     "eslint-plugin-react-refresh": "^0.4.26",
     "husky": "^9.1.7",
     "prettier": "^3.2.5",
-    "typescript": "^5.3.3",
+    "typescript": "^6.0.2",
     "typescript-eslint": "^8.57.2",
     "vite": "^5.1.0",
     "vitest": "^1.2.2"
