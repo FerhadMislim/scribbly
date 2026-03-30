@@ -75,14 +75,8 @@ class LoRAManager:
         metadata = self._get_metadata()
         loras = metadata.get("loras", [])
         
-        available = []
-        for lora in loras:
-            lora_path = Path(lora["path"])
-            if lora_path.exists() or (self._loras_dir / lora_path.name).exists():
-                available.append(lora.copy())
-        
-        logger.info(f"Found {len(available)} available LoRAs")
-        return available
+        logger.info(f"Found {len(loras)} available LoRAs")
+        return [lora.copy() for lora in loras]
 
     def load(
         self,
