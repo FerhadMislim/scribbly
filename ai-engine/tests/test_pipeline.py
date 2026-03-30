@@ -12,6 +12,7 @@ from PIL import Image
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 class TestInferencePipeline:
@@ -25,7 +26,7 @@ class TestInferencePipeline:
     @pytest.fixture
     def pipeline(self):
         """Create a pipeline instance without loading models."""
-        from ai_engine.pipeline import InferencePipeline
+        from pipeline import InferencePipeline
         
         # Use CPU and disable expensive operations for testing
         pipe = InferencePipeline(
@@ -62,7 +63,7 @@ class TestInferencePipeline:
 
     def test_context_manager(self):
         """Test pipeline as context manager."""
-        from ai_engine.pipeline import InferencePipeline
+        from pipeline import InferencePipeline
         
         # Mock the load and unload
         with patch.object(InferencePipeline, 'load') as mock_load, \
@@ -85,7 +86,7 @@ class TestInferencePipeline:
 
     def test_create_pipeline_sd15(self):
         """Test factory function for SD1.5."""
-        from ai_engine.pipeline import create_pipeline
+        from pipeline import create_pipeline
         
         pipe = create_pipeline(model="sd15", device="cpu")
         
@@ -94,7 +95,7 @@ class TestInferencePipeline:
 
     def test_create_pipeline_unknown_model(self):
         """Test factory function raises error for unknown model."""
-        from ai_engine.pipeline import create_pipeline
+        from pipeline import create_pipeline
         
         with pytest.raises(ValueError, match="Unknown model"):
             create_pipeline(model="unknown")
@@ -117,7 +118,7 @@ class TestPipelineMemory:
     def test_unload_clears_memory(self):
         """Test unload clears GPU memory."""
         import torch
-        from ai_engine.pipeline import InferencePipeline
+        from pipeline import InferencePipeline
         
         # Create pipeline but don't load
         pipe = InferencePipeline(device="cpu", dtype=torch.float32)
@@ -127,7 +128,7 @@ class TestPipelineMemory:
 
     def test_double_load_is_safe(self):
         """Test loading twice is safe (idempotent)."""
-        from ai_engine.pipeline import InferencePipeline
+        from pipeline import InferencePipeline
         
         pipe = InferencePipeline(device="cpu", dtype=torch.float32)
         
