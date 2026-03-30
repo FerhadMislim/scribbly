@@ -2,7 +2,7 @@
 name = "scribbly-backend"
 version = "1.0.0"
 description = "Scribbly Backend API"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
@@ -23,6 +23,11 @@ dependencies = [
     "email-validator>=2.1.0",
     "httpx>=0.26.0",
     "Pillow>=10.2.0",
+    "torch>=2.0.0",
+    "diffusers>=0.20.0",
+    "transformers>=4.30.0",
+    "accelerate>=0.20.0",
+    "opencv-python>=4.8.0",
 ]
 
 [project.optional-dependencies]
@@ -81,7 +86,6 @@ ensure_newline_before_comments = true
 line_length = 88
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "--strict-markers --tb=short"
 
