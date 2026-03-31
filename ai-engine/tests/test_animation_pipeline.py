@@ -3,11 +3,15 @@ Tests for AnimationPipeline
 """
 
 import json
+import sys
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch, PropertyMock
 
 import pytest
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 @pytest.fixture
@@ -66,9 +70,9 @@ class TestLoadUnload:
 
     def test_load_sets_loaded_flag(self, animation_pipeline):
         """Test that load sets is_loaded to True."""
-        with patch("animation_pipeline.AnimateDiffPipeline") as mock_animediff:
-            with patch("animation_pipeline.MotionAdapter") as mock_adapter:
-                with patch("animation_pipeline.DDIMScheduler") as mock_scheduler:
+        with patch("diffusers.AnimateDiffPipeline") as mock_animediff:
+            with patch("diffusers.MotionAdapter") as mock_adapter:
+                with patch("diffusers.DDIMScheduler") as mock_scheduler:
                     mock_adapter.from_pretrained.return_value = MagicMock()
                     mock_animediff.from_pretrained.return_value = MagicMock()
                     mock_scheduler.from_config.return_value = MagicMock()
@@ -123,7 +127,7 @@ class TestExportFunctions:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "output.gif"
             
-            with patch("animation_pipeline.imageio") as mock_imageio:
+            with patch("imageio") as mock_imageio:
                 export_gif(frames, output_path, fps=8)
                 
                 mock_imageio.mimsave.assert_called_once()
@@ -139,7 +143,7 @@ class TestExportFunctions:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "output.mp4"
             
-            with patch("animation_pipeline.imageio") as mock_imageio:
+            with patch("imageio") as mock_imageio:
                 export_mp4(frames, output_path, fps=8)
                 
                 mock_imageio.mimsave.assert_called_once()
@@ -163,7 +167,7 @@ class TestGenerateFromSketch:
             mock_image = MagicMock()
             mock_image.convert.return_value = mock_image
             
-            with patch("animation_pipeline.Image.open") as mock_open:
+                with patch("PIL.Image.open") as mock_open:
                 with patch.object(pipe, "generate_animation") as mock_gen:
                     mock_open.return_value = mock_image
                     mock_gen.return_value = []
@@ -204,9 +208,9 @@ class TestEndToEnd:
         
         pipe = AnimationPipeline()
         
-        with patch("animation_pipeline.AnimateDiffPipeline") as mock_animediff:
-            with patch("animation_pipeline.MotionAdapter") as mock_adapter:
-                with patch("animation_pipeline.DDIMScheduler") as mock_scheduler:
+        with patch("diffusers.AnimateDiffPipeline") as mock_animediff:
+            with patch("diffusers.MotionAdapter") as mock_adapter:
+                with patch("diffusers.DDIMScheduler") as mock_scheduler:
                     mock_adapter.from_pretrained.return_value = MagicMock()
                     mock_animediff.from_pretrained.return_value = MagicMock()
                     mock_scheduler.from_config.return_value = MagicMock()
