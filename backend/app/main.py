@@ -4,6 +4,7 @@ FastAPI application entry point.
 
 import sys
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,22 +12,26 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import close_db, init_db
 
+_logging_configured = False
+
 
 def setup_logging() -> None:
     """Configure structured JSON logging."""
-    import loguru
+    global _logging_configured
+    if _logging_configured:
+        return
+    
     from loguru import logger
     
     logger.remove()
     
     if settings.LOG_FORMAT == "json":
         import json
-        import datetime
         
         class JsonFormatter:
             def format(self, record):
                 log_data = {
-                    "timestamp": datetime.datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     "level": record["level"].name,
                     "message": record["message"],
                     "module": record["module"],
@@ -49,6 +54,8 @@ def setup_logging() -> None:
             format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
             level=settings.LOG_LEVEL,
         )
+    
+    _logging_configured = True
 
 
 @asynccontextmanager

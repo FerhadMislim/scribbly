@@ -36,11 +36,14 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     
     Yields:
         AsyncSession: Database session
+        
+    Note:
+        Caller is responsible for committing or rolling back.
+        For automatic rollback on exception, use try/except in route.
     """
     async with async_session_maker() as session:
         try:
             yield session
-            await session.commit()
         except Exception:
             await session.rollback()
             raise
