@@ -47,7 +47,7 @@ jobs:
         run: |
           cd backend
           pip install -e .
-          pip install pytest pytest-asyncio pytest-cov torch diffusers accelerate opencv-python
+          pip install pytest pytest-asyncio pytest-cov torch diffusers accelerate opencv-python pillow imageio
 
       - name: Run AI Engine tests
         run: |
