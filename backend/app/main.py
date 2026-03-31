@@ -4,7 +4,7 @@ FastAPI application entry point.
 
 import sys
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,18 +20,18 @@ def setup_logging() -> None:
     global _logging_configured
     if _logging_configured:
         return
-    
+
     from loguru import logger
-    
+
     logger.remove()
-    
+
     if settings.LOG_FORMAT == "json":
         import json
-        
+
         class JsonFormatter:
             def format(self, record):
                 log_data = {
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "level": record["level"].name,
                     "message": record["message"],
                     "module": record["module"],
@@ -41,7 +41,7 @@ def setup_logging() -> None:
                 if record["exception"]:
                     log_data["exception"] = str(record["exception"])
                 return json.dumps(log_data)
-        
+
         logger.add(
             sys.stdout,
             format="{message}",
@@ -54,7 +54,7 @@ def setup_logging() -> None:
             format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
             level=settings.LOG_LEVEL,
         )
-    
+
     _logging_configured = True
 
 
@@ -62,7 +62,7 @@ def setup_logging() -> None:
 async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     from loguru import logger
-    
+
     logger.info("Starting application...")
     await init_db()
     yield
@@ -73,7 +73,7 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     """Create and configure FastAPI application."""
     setup_logging()
-    
+
     app = FastAPI(
         title=settings.APP_NAME,
         version=settings.APP_VERSION,

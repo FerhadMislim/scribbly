@@ -30,13 +30,13 @@ async_session_maker = async_sessionmaker(
 )
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession]:
     """
     Dependency for getting async database session.
-    
+
     Yields:
         AsyncSession: Database session
-        
+
     Note:
         Caller is responsible for committing or rolling back.
         For automatic rollback on exception, use try/except in route.

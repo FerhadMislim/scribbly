@@ -2,8 +2,9 @@
 Tests for main application.
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 
 pytestmark = pytest.mark.asyncio
 
@@ -17,9 +18,9 @@ class TestCreateApp:
             with patch("app.database.init_db"):
                 with patch("app.database.close_db"):
                     from app.main import create_app
-                    
+
                     app = create_app()
-                    
+
                     assert app.title == "Scribbly"
 
     def test_app_has_health_endpoint(self):
@@ -28,26 +29,26 @@ class TestCreateApp:
             with patch("app.database.init_db"):
                 with patch("app.database.close_db"):
                     from app.main import create_app
-                    
+
                     app = create_app()
-                    
+
                     paths = [route.path for route in app.routes]
                     assert "/health" in paths
 
     def test_health_returns_correct_status(self):
         """Test that health endpoint returns correct status."""
         from fastapi.testclient import TestClient
-        
+
         with patch("app.main.setup_logging"):
             with patch("app.database.init_db"):
                 with patch("app.database.close_db"):
                     from app.main import create_app
-                    
+
                     app = create_app()
-                    
+
                     client = TestClient(app)
                     response = client.get("/health")
-                    
+
                     assert response.status_code == 200
                     assert response.json() == {"status": "ok", "version": "1.0.0"}
 
@@ -57,15 +58,15 @@ class TestCreateApp:
             with patch("app.database.init_db"):
                 with patch("app.database.close_db"):
                     from app.main import create_app
-                    
+
                     app = create_app()
-                    
+
                     cors_middleware = None
                     for middleware in app.user_middleware:
                         if middleware.cls.__name__ == "CORSMiddleware":
                             cors_middleware = middleware
                             break
-                    
+
                     assert cors_middleware is not None
 
 
@@ -76,6 +77,7 @@ class TestHealthEndpoint:
     def client(self):
         """Create test client."""
         from fastapi.testclient import TestClient
+
         from app.main import app
         return TestClient(app)
 
@@ -110,9 +112,9 @@ class TestLifespan:
             with patch("app.main.close_db", new_callable=AsyncMock):
                 with patch("app.main.setup_logging"):
                     from app.main import create_app
-                    
+
                     app = create_app()
-                    
+
                     async with app.router.lifespan_context(app):
                         mock_init.assert_called_once()
 
@@ -123,10 +125,10 @@ class TestLifespan:
             with patch("app.main.close_db", new_callable=AsyncMock) as mock_close:
                 with patch("app.main.setup_logging"):
                     from app.main import create_app
-                    
+
                     app = create_app()
-                    
+
                     async with app.router.lifespan_context(app):
                         pass
-                    
+
                     mock_close.assert_called_once()
