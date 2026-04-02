@@ -79,6 +79,7 @@ class TestHealthEndpoint:
         from fastapi.testclient import TestClient
 
         from app.main import app
+
         return TestClient(app)
 
     def test_health_returns_200(self, client):

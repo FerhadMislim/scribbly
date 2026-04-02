@@ -45,6 +45,4 @@ class ValidationErrorDetail(BaseModel):
 class UploadErrorResponse(BaseModel):
     """Response schema for upload validation errors."""
 
-    detail: str | list[ValidationErrorDetail] = Field(
-        ..., description="Error detail"
-    )
+    detail: str | list[ValidationErrorDetail] = Field(..., description="Error detail")

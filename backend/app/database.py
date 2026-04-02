@@ -12,6 +12,7 @@ from app.config import settings
 
 class Base(DeclarativeBase):
     """Base class for SQLAlchemy models."""
+
     pass
 
 
@@ -58,6 +59,7 @@ async def init_db() -> None:
             await conn.run_sync(Base.metadata.create_all)
     except Exception as e:
         from loguru import logger
+
         logger.warning(f"Could not initialize database: {e}")
 
 

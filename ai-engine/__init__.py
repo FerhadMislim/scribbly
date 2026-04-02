@@ -16,7 +16,7 @@ except ImportError:
 
 __all__ = [
     "InferencePipeline",
-    "create_pipeline", 
+    "create_pipeline",
     "StyleManager",
     "create_style_manager",
 ]

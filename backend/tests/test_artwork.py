@@ -32,7 +32,9 @@ class TestStorageService:
         """Test presigned URL generation."""
         with patch("app.services.storage.boto3.client") as mock_boto:
             mock_client = MagicMock()
-            mock_client.generate_presigned_url = MagicMock(return_value="https://presigned.url")
+            mock_client.generate_presigned_url = MagicMock(
+                return_value="https://presigned.url"
+            )
             mock_client.head_bucket = MagicMock()
             mock_boto.return_value = mock_client
 

@@ -11,7 +11,7 @@ from app.database import get_db
 
 
 async def get_current_user_id(
-    x_user_id: Annotated[str | None, Header()] = None
+    x_user_id: Annotated[str | None, Header()] = None,
 ) -> str | None:
     """
     Get current user ID from header.
@@ -29,7 +29,7 @@ async def get_current_user_id(
 
 
 async def require_current_user_id(
-    current_user_id: Annotated[str | None, Depends(get_current_user_id)]
+    current_user_id: Annotated[str | None, Depends(get_current_user_id)],
 ) -> str:
     """
     Require current user ID - raises 401 if not present.

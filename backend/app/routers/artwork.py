@@ -29,6 +29,8 @@ class UploadConfig:
 
 
 router = APIRouter(prefix="/artwork", tags=["artwork"])
+
+
 async def validate_upload(
     file: UploadFile,
     storage: StorageService,
