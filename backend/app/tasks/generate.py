@@ -44,6 +44,8 @@ def generate_image_task(
     import sys
     from pathlib import Path
 
+    import torch
+
     sys.path.insert(0, str(Path(__file__).parent.parent.parent / "ai-engine"))
 
     from pipeline import InferencePipeline
@@ -91,8 +93,9 @@ def generate_image_task(
         pipeline = InferencePipeline(
             controlnet_id="lllyasviel/control_v11p_sd15_scribble",
             device="cpu",
+            dtype=torch.float32,
             enable_xformers=False,
-            enable_cpu_offload=True,
+            enable_cpu_offload=False,
         )
 
         result = pipeline.generate(
@@ -119,3 +122,4 @@ def generate_image_task(
         logger.error(f"Task {task_id} failed: {exc}")
         task_service.update_status(task_id, TaskStatus.FAILED, error=str(exc))
         raise self.retry(exc=exc, countdown=5) from exc
+    return None

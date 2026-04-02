@@ -77,7 +77,7 @@ async def generate_image(
     task_id = str(uuid.uuid4())
     task_service.create_task(task_id, TaskStatus.QUEUED)
 
-    # Queue Celery task
+    # Queue Celery task (import inside to avoid loading torch in backend)
     from app.tasks.generate import generate_image_task
 
     generate_image_task.delay(

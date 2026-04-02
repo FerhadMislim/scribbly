@@ -8,7 +8,7 @@ from enum import StrEnum
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.dependencies import get_current_user_id
-from app.schemas import UploadResponse, ValidationErrorDetail
+from app.schemas import UploadResponse
 from app.services.storage import StorageService, get_storage
 
 
@@ -54,10 +54,10 @@ async def validate_upload(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=[
-                ValidationErrorDetail(
-                    field="file",
-                    message=f"Invalid file type: {file.content_type}. Allowed: JPEG, PNG, WEBP",
-                )
+                {
+                    "field": "file",
+                    "message": f"Invalid file type: {file.content_type}. Allowed: JPEG, PNG, WEBP",
+                }
             ],
         )
 
@@ -70,10 +70,10 @@ async def validate_upload(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=[
-                ValidationErrorDetail(
-                    field="file",
-                    message=f"File too large: {file_size / 1024 / 1024:.1f}MB. Maximum: 10MB",
-                )
+                {
+                    "field": "file",
+                    "message": f"File too large: {file_size / 1024 / 1024:.1f}MB. Maximum: 10MB",
+                }
             ],
         )
 
@@ -90,10 +90,10 @@ async def validate_upload(
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=[
-                    ValidationErrorDetail(
-                        field="file",
-                        message=f"Image too small: {width}x{height}. Minimum: 64x64px",
-                    )
+                    {
+                        "field": "file",
+                        "message": f"Image too small: {width}x{height}. Minimum: 64x64px",
+                    }
                 ],
             )
     except HTTPException:
