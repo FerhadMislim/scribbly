@@ -70,7 +70,7 @@ loras: []
 # ---------------------
 download:
   use_huggingface_cli: true
-  requires_auth: false  # Set to true for gated models
+  requires_auth: false # Set to true for gated models
   max_retries: 3
   verify_checksums: true
 
@@ -82,7 +82,7 @@ inference:
   fallback_device: "cpu"
   enable_xformers: true
   enable_vae_slicing: true
-  torch_dtype: "float16"  # float16 for GPU, float32 for CPU
+  torch_dtype: "float16" # float16 for GPU, float32 for CPU
 
 # ---------------------
 # Generation Defaults

@@ -137,7 +137,7 @@ styles:
 defaults:
   num_images: 1
   image_size: 512
-  seed: null  # null = random
+  seed: null # null = random
 
 # ---------------------
 # Safety Settings
@@ -151,9 +151,9 @@ safety:
     - nsfw
     - gore
     - deformed
-  
+
   # Enable content filtering
   filter_prompts: true
-  
+
   # Minimum age appropriate
   child_safe_only: true

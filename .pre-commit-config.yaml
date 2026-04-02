@@ -24,13 +24,13 @@ repos:
       - id: check-json
       - id: check-toml
       - id: check-added-large-files
-        args: ['--maxkb=5000']
+        args: ["--maxkb=5000"]
       - id: check-merge-conflict
       - id: detect-private-key
 
   # YAML linting
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.1
+    rev: v3.0.3
     hooks:
       - id: prettier
         types: [yaml]

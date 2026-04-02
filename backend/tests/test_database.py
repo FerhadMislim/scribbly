@@ -56,10 +56,13 @@ class TestDatabaseConnection:
         """Test that init_db creates all tables."""
         with patch("app.database.engine") as mock_engine:
             mock_conn = AsyncMock()
-            mock_engine.begin.return_value.__aenter__ = AsyncMock(return_value=mock_conn)
+            mock_engine.begin.return_value.__aenter__ = AsyncMock(
+                return_value=mock_conn
+            )
             mock_engine.begin.return_value.__aexit__ = AsyncMock(return_value=None)
 
             from app.database import init_db
+
             await init_db()
 
             mock_conn.run_sync.assert_called_once()
@@ -70,6 +73,7 @@ class TestDatabaseConnection:
 
         with patch("app.database.engine", mock_engine):
             from app.database import close_db
+
             await close_db()
 
             mock_engine.dispose.assert_called_once()

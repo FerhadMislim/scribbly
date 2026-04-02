@@ -1,8 +1,8 @@
 # Scribbly System Architecture Document
 
-> **Project:** Scribbly — Multi-Platform AI Creative Tool for Kids  
-> **Version:** 1.0.0  
-> **Date:** 2026-03-29  
+> **Project:** Scribbly — Multi-Platform AI Creative Tool for Kids
+> **Version:** 1.0.0
+> **Date:** 2026-03-29
 > **Status:** Draft — Pending Team Lead Approval
 
 ---
@@ -22,7 +22,7 @@ flowchart TB
         AI["AI Model Providers<br/>(HuggingFace)"]
         Cloud["Cloud Infrastructure<br/>(AWS/Fly.io)"]
     end
-    
+
     subgraph Scribbly
         Web["React Web App"]
         iOS["iOS App"]
@@ -33,7 +33,7 @@ flowchart TB
         Storage[(S3/MinIO)]
         Queue[("Celery Queue")]
     end
-    
+
     U -->|Uses| Web
     U -->|Uses| iOS
     Web -->|HTTPS| API
@@ -58,32 +58,32 @@ flowchart TB
         Web["React Web<br/>(Vite + TS)"]
         iOS["iOS App<br/>(SwiftUI)"]
     end
-    
+
     subgraph API_Gateway["API Layer"]
         FastAPI["FastAPI<br/>(Port 8000)"]
         Auth["Auth Service<br/>(JWT)"]
         Router["API Router<br/>(/api/v1/)"]
     end
-    
+
     subgraph Services["Services Layer"]
         Upload["Upload Service"]
         Generate["Generation Service"]
         Gallery["Gallery Service"]
         User["User Service"]
     end
-    
+
     subgraph Storage_Layer["Storage Layer"]
         S3["S3/MinIO"]
         Postgres["PostgreSQL"]
         Redis["Redis"]
     end
-    
+
     subgraph Inference["AI Inference Layer"]
         Celery["Celery Workers"]
         Pipeline["Inference Pipeline"]
         ControlNet["ControlNet + SDXL"]
     end
-    
+
     Web -->|HTTPS| FastAPI
     iOS -->|HTTPS| FastAPI
     FastAPI --> Auth
@@ -117,7 +117,7 @@ flowchart LR
         Config["config.py<br/>(Settings)"]
         Deps["dependencies.py<br/>(DI)"]
     end
-    
+
     subgraph Routers
         AuthR["auth.py"]
         UploadR["upload.py"]
@@ -125,18 +125,18 @@ flowchart LR
         TaskR["tasks.py"]
         UserR["user.py"]
     end
-    
+
     subgraph Services
         AuthS["AuthService"]
         StorageS["StorageService"]
         TaskS["TaskService"]
     end
-    
+
     subgraph Models
         SQLAlchemy["SQLAlchemy<br/>(Async)"]
         Pydantic["Pydantic<br/>(Schemas)"]
     end
-    
+
     Main --> Config
     Main --> Deps
     Deps --> AuthR
@@ -166,14 +166,14 @@ flowchart TB
         LoRA["LoRA Manager"]
         Output["Output Image"]
     end
-    
+
     subgraph Models
         SDXL_Model["SDXL Base Model"]
         CN_Canny["ControlNet Canny"]
         CN_Scribble["ControlNet Scribble"]
         LoRA_Weights["LoRA Weights"]
     end
-    
+
     Input --> Preprocess
     Preprocess --> ControlNet
     ControlNet --> SDXL
@@ -208,7 +208,7 @@ sequenceDiagram
     API->>DB: Record upload metadata
     DB-->>API: Success
     API-->>Web/iOS: { upload_id, preview_url }
-    
+
     User->>Web/iOS: Select style & generate
     Web/iOS->>API: POST /api/v1/generate/image
     API->>DB: Create generation record
@@ -216,20 +216,20 @@ sequenceDiagram
     API->>Celery: Queue inference task
     Celery-->>API: { task_id, status: queued }
     API-->>Web/iOS: { task_id, poll_url }
-    
+
     loop Poll every 3s
         Web/iOS->>API: GET /api/v1/tasks/{task_id}
         API->>DB: Check task status
         DB-->>API: status
         API-->>Web/iOS: { status }
     end
-    
+
     Celery->>GPU: Execute inference
     GPU->>S3: Upload result
     S3-->>GPU: Success
     GPU->>DB: Update task status = complete
     DB-->>GPU: Success
-    
+
     Web/iOS->>API: GET /api/v1/tasks/{task_id}
     API->>DB: Get result URL
     DB-->>API: { result_url }
@@ -254,12 +254,12 @@ sequenceDiagram
     API->>Redis: Store refresh token
     API-->>Client: { access_token, refresh_token }
     Client->>Client: Store tokens
-    
+
     Note over Client,API: Every request
     Client->>API: GET /api/v1/... + Authorization: Bearer {access_token}
     API->>API: Validate JWT
     API-->>Client: Response
-    
+
     Note over Client,API: Token expired
     Client->>API: POST /api/v1/auth/refresh
     API->>Redis: Verify refresh token
@@ -408,5 +408,5 @@ Response (GET /tasks/{task_id}):
 
 ---
 
-*Document Version: 1.0.0*  
+*Document Version: 1.0.0*
 *Last Updated: 2026-03-29*
