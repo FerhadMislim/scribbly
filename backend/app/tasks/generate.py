@@ -12,6 +12,15 @@ from app.schemas.task import TaskStatus
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_PROMPTS = {
+    "pixar_3d": "3D animated character, pixar style, detailed, high quality",
+    "anime": "anime style illustration, manga, vibrant colors",
+    "watercolor": "watercolor painting, soft colors, artistic",
+    "sketch": "pencil sketch, black and white, detailed linework",
+    "oil_painting": "oil painting, classic art style, brushstrokes visible",
+    "cartoon": "cartoon style, fun, colorful, animated",
+}
+
 
 @celery_app.task(bind=True, max_retries=2)
 def generate_image_task(
@@ -32,6 +41,14 @@ def generate_image_task(
         custom_prompt: Optional custom prompt
         user_id: User ID
     """
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "ai-engine"))
+
+    from pipeline import InferencePipeline
+    from style_manager import StyleManager
+
     from app.services.storage import StorageService
     from app.services.task import TaskService
 
@@ -41,7 +58,6 @@ def generate_image_task(
     try:
         task_service.update_status(task_id, TaskStatus.PROCESSING)
 
-        # Download upload - try both .png and .jpeg
         upload_key_png = f"uploads/{user_id}/{upload_id}.png"
         upload_key_jpeg = f"uploads/{user_id}/{upload_id}.jpeg"
 
@@ -52,8 +68,7 @@ def generate_image_task(
             )
             image_data = response["Body"].read()
             logger.info(f"Found file: {upload_key_png}")
-        except Exception as e:
-            logger.info(f"Not found as png ({e}), trying jpeg: {upload_key_jpeg}")
+        except Exception:
             response = storage._client.get_object(
                 Bucket=storage._bucket,
                 Key=upload_key_jpeg,
@@ -61,20 +76,40 @@ def generate_image_task(
             image_data = response["Body"].read()
             logger.info(f"Found file: {upload_key_jpeg}")
 
-        image = Image.open(BytesIO(image_data))
+        input_image = Image.open(BytesIO(image_data))
 
-        # Run inference (placeholder - actual AI pipeline in TICKET-010)
+        style_manager = StyleManager()
+        style = style_manager.get_style(style_id)
+        style_prompt = style.prompt if style else ""
+
+        prompt = custom_prompt or style_prompt or "a beautiful artwork"
+        negative_prompt = style.negative_prompt if style else ""
+
         logger.info(f"Running inference for task {task_id} with style {style_id}")
-        result = image  # Placeholder - replace with actual pipeline
+        logger.info(f"Prompt: {prompt}")
 
-        # Upload result
+        pipeline = InferencePipeline(
+            controlnet_id="lllyasviel/control_v11p_sd15_scribble",
+            device="cpu",
+            enable_xformers=False,
+            enable_cpu_offload=True,
+        )
+
+        result = pipeline.generate(
+            image=input_image,
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            num_steps=20,
+            guidance_scale=7.5,
+            image_size=512,
+        )
+
         result_key = f"results/{user_id}/{task_id}.png"
         buffer = BytesIO()
         result.save(buffer, format="PNG")
         buffer.seek(0)
         storage.upload(result_key, buffer.getvalue(), "image/png")
 
-        # Get presigned URL
         result_url = storage.get_presigned_url(result_key)
 
         task_service.update_status(task_id, TaskStatus.COMPLETE, result_url=result_url)
