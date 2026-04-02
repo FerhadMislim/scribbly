@@ -140,10 +140,10 @@ async def upload_artwork(
     key = f"uploads/{user_id}/{upload_id}.{ext}"
 
     # Upload to S3
-    await storage.upload(key, content, content_type)
+    storage.upload(key, content, content_type)
 
     # Generate presigned URL for preview
-    preview_url = await storage.get_presigned_url(key)
+    preview_url = storage.get_presigned_url(key)
 
     return UploadResponse(
         upload_id=upload_id,

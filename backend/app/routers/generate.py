@@ -63,9 +63,11 @@ async def generate_image(
             detail=f"Invalid style_id: {request.style_id}. Valid: {', '.join(valid_styles)}",
         ) from None
 
-    # Check upload exists
-    upload_key = f"uploads/{current_user}/{request.upload_id}.png"
-    if not await storage.exists(upload_key):
+    # Check upload exists - try both .png and .jpeg
+    upload_key_png = f"uploads/{current_user}/{request.upload_id}.png"
+    upload_key_jpeg = f"uploads/{current_user}/{request.upload_id}.jpeg"
+
+    if not (storage.exists(upload_key_png) or storage.exists(upload_key_jpeg)):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Upload not found: {request.upload_id}",

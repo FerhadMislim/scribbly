@@ -41,12 +41,21 @@ def generate_image_task(
     try:
         task_service.update_status(task_id, TaskStatus.PROCESSING)
 
-        # Download upload
-        upload_key = f"uploads/{user_id}/{upload_id}.png"
-        image_data = storage._client.get_object(
-            Bucket=storage._bucket,
-            Key=upload_key,
-        )["Body"].read()
+        # Download upload - try both .png and .jpeg
+        upload_key_png = f"uploads/{user_id}/{upload_id}.png"
+        upload_key_jpeg = f"uploads/{user_id}/{upload_id}.jpeg"
+
+        try:
+            image_data = storage._client.get_object(
+                Bucket=storage._bucket,
+                Key=upload_key_png,
+            )["Body"].read()
+        except Exception:
+            image_data = storage._client.get_object(
+                Bucket=storage._bucket,
+                Key=upload_key_jpeg,
+            )["Body"].read()
+
         image = Image.open(BytesIO(image_data))
 
         # Run inference (placeholder - actual AI pipeline in TICKET-010)
