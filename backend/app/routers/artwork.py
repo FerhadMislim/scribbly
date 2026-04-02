@@ -3,6 +3,7 @@ Artwork router for upload and management endpoints.
 """
 
 import uuid
+from enum import StrEnum
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
@@ -10,14 +11,24 @@ from app.dependencies import get_current_user_id
 from app.schemas import UploadResponse, ValidationErrorDetail
 from app.services.storage import StorageService, get_storage
 
+
+class ContentType(StrEnum):
+    """Allowed content types for artwork uploads."""
+
+    JPEG = "image/jpeg"
+    PNG = "image/png"
+    WEBP = "image/webp"
+
+
+class UploadConfig:
+    """Configuration constants for artwork uploads."""
+
+    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+    MIN_WIDTH = 64
+    MIN_HEIGHT = 64
+
+
 router = APIRouter(prefix="/artwork", tags=["artwork"])
-
-ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
-MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
-MIN_WIDTH = 64
-MIN_HEIGHT = 64
-
-
 async def validate_upload(
     file: UploadFile,
     storage: StorageService,
@@ -36,7 +47,8 @@ async def validate_upload(
         HTTPException: If validation fails
     """
     # Check content type
-    if file.content_type not in ALLOWED_CONTENT_TYPES:
+    allowed_types = {ct.value for ct in ContentType}
+    if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=[
@@ -52,7 +64,7 @@ async def validate_upload(
     file_size = len(content)
 
     # Check file size
-    if file_size > MAX_FILE_SIZE:
+    if file_size > UploadConfig.MAX_FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=[
@@ -72,7 +84,7 @@ async def validate_upload(
         image = Image.open(BytesIO(content))
         width, height = image.size
 
-        if width < MIN_WIDTH or height < MIN_HEIGHT:
+        if width < UploadConfig.MIN_WIDTH or height < UploadConfig.MIN_HEIGHT:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=[
