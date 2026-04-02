@@ -46,15 +46,20 @@ def generate_image_task(
         upload_key_jpeg = f"uploads/{user_id}/{upload_id}.jpeg"
 
         try:
-            image_data = storage._client.get_object(
+            response = storage._client.get_object(
                 Bucket=storage._bucket,
                 Key=upload_key_png,
-            )["Body"].read()
-        except Exception:
-            image_data = storage._client.get_object(
+            )
+            image_data = response["Body"].read()
+            logger.info(f"Found file: {upload_key_png}")
+        except Exception as e:
+            logger.info(f"Not found as png ({e}), trying jpeg: {upload_key_jpeg}")
+            response = storage._client.get_object(
                 Bucket=storage._bucket,
                 Key=upload_key_jpeg,
-            )["Body"].read()
+            )
+            image_data = response["Body"].read()
+            logger.info(f"Found file: {upload_key_jpeg}")
 
         image = Image.open(BytesIO(image_data))
 
