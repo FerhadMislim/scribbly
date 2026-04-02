@@ -119,10 +119,9 @@ services:
   celery-worker:
     build:
       context: .
-      dockerfile: infra/docker/Dockerfile.backend-cpu
+      dockerfile: infra/docker/Dockerfile.celery
     container_name: scribbly-celery
     restart: unless-stopped
-    command: celery -A app.celery_app worker --loglevel=info
     env_file:
       - ./backend/.env
     environment:

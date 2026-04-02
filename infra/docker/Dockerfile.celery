@@ -1,8 +1,7 @@
 # ===========================================
-# Scribbly Backend CPU - Docker Image
-# FastAPI application without GPU support
+# Scribbly Celery Worker - Docker Image
+# Handles async image generation tasks
 # ===========================================
-# Build: docker build -f infra/docker/Dockerfile.backend-cpu -t scribbly/backend-cpu .
 
 FROM python:3.13-slim
 
@@ -10,16 +9,14 @@ FROM python:3.13-slim
 # Labels
 # ---------------------
 LABEL maintainer="Scribbly Team"
-LABEL description="Scribbly Backend API (CPU)"
+LABEL description="Scribbly Celery Worker"
 LABEL version="1.0.0"
 
 # ---------------------
 # Environment
 # ---------------------
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy
+    PYTHONDONTWRITEBYTECODE=1
 
 # ---------------------
 # System dependencies
@@ -42,7 +39,7 @@ WORKDIR /app
 
 # ---------------------
 # Install Python dependencies
-COPY backend/pyproject.toml /app/pyproject.toml
+# ---------------------
 COPY backend/requirements.txt /app/requirements.txt
 RUN uv pip install --system -r requirements.txt
 
@@ -50,19 +47,9 @@ RUN uv pip install --system -r requirements.txt
 # Copy application
 # ---------------------
 COPY backend/app/ /app/
+COPY ai-engine/ /app/ai-engine/
 
 # ---------------------
-# Expose port
+# Run celery worker
 # ---------------------
-EXPOSE 8000
-
-# ---------------------
-# Health check
-# ---------------------
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
-
-# ---------------------
-# Run application
-# ---------------------
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["celery", "-A", "app.celery_app", "worker", "--loglevel=info"]
