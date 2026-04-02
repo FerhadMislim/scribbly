@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import close_db, init_db
-from app.routers import artwork
+from app.routers import artwork, generate, tasks
 
 _logging_configured = False
 
@@ -96,6 +96,8 @@ def create_app() -> FastAPI:
         return {"status": "ok", "version": settings.APP_VERSION}
 
     app.include_router(artwork.router, prefix=settings.API_V1_PREFIX)
+    app.include_router(generate.router, prefix=settings.API_V1_PREFIX)
+    app.include_router(tasks.router, prefix=settings.API_V1_PREFIX)
 
     return app
 
