@@ -47,7 +47,7 @@ class StorageService:
             except ClientError as e:
                 logger.warning(f"Could not create bucket: {e}")
 
-    async def upload(
+    def upload(
         self,
         key: str,
         data: bytes,
@@ -78,7 +78,7 @@ class StorageService:
             logger.error(f"Upload failed: {e}")
             raise RuntimeError(f"Failed to upload file: {e}") from e
 
-    async def get_presigned_url(
+    def get_presigned_url(
         self,
         key: str,
         expires_seconds: int = 3600,
@@ -107,7 +107,7 @@ class StorageService:
             logger.error(f"Failed to generate presigned URL: {e}")
             raise RuntimeError(f"Failed to generate presigned URL: {e}") from e
 
-    async def delete(self, key: str) -> None:
+    def delete(self, key: str) -> None:
         """
         Delete file from S3/MinIO.
 
@@ -121,7 +121,7 @@ class StorageService:
             logger.error(f"Delete failed: {e}")
             raise RuntimeError(f"Failed to delete file: {e}") from e
 
-    async def exists(self, key: str) -> bool:
+    def exists(self, key: str) -> bool:
         """
         Check if file exists in S3/MinIO.
 

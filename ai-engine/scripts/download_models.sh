@@ -45,7 +45,6 @@ echo ""
 echo "Downloading Stable Diffusion 1.5 (~2GB)..."
 echo "-------------------------------------------"
 huggingface-cli download runwayml/stable-diffusion-v1-5 \
-    --include "*.safetensors" \
     --local-dir "$MODELS_DIR/sd15"
 
 echo ""

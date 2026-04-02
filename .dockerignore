@@ -1,0 +1,54 @@
+# Docker ignore patterns
+# Exclude large files from build context
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Node
+web/node_modules/
+
+# AI Models (mount at runtime instead)
+ai-engine/models/
+ai-engine/.cache/
+huggingface/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed in container)
+docs/
+tickets/
+README.md
+
+# Test/Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Docker
+.docker/
+Dockerfile*
+docker-compose*.yml
+
+# MinIO data (mounted at runtime)
+minio_data/
