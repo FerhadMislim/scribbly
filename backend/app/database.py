@@ -53,10 +53,17 @@ async def get_db() -> AsyncGenerator[AsyncSession]:
 
 async def init_db() -> None:
     """Initialize database tables."""
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as e:
+        from loguru import logger
+        logger.warning(f"Could not initialize database: {e}")
 
 
 async def close_db() -> None:
     """Close database connections."""
-    await engine.dispose()
+    try:
+        await engine.dispose()
+    except Exception:
+        pass
