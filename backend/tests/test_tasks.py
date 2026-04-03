@@ -2,7 +2,10 @@
 Tests for task service.
 """
 
+from io import BytesIO
 from unittest.mock import MagicMock, patch
+
+from PIL import Image
 
 
 class TestTaskService:
@@ -127,16 +130,79 @@ class TestTaskSchemas:
         assert resp.result_url == "https://s3.example.com/result.png"
 
 
-class TestStyleId:
-    """Tests for StyleId enum."""
+class TestStyleValidation:
+    """Tests for config-driven style validation."""
 
-    def test_style_id_values(self):
-        """Test StyleId enum values."""
-        from app.routers.generate import StyleId
+    def test_style_manager_contains_hand_drawn_pencil(self):
+        """The new pencil style should be available to the API layer."""
+        import sys
+        from pathlib import Path
 
-        assert StyleId.PIXAR_3D.value == "pixar_3d"
-        assert StyleId.ANIME.value == "anime"
-        assert StyleId.WATERCOLOR.value == "watercolor"
-        assert StyleId.SKETCH.value == "sketch"
-        assert StyleId.OIL_PAINTING.value == "oil_painting"
-        assert StyleId.CARTOON.value == "cartoon"
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent / "ai-engine"))
+
+        from style_manager import StyleManager
+
+        manager = StyleManager()
+
+        assert "hand_drawn_pencil" in manager.get_style_ids()
+
+
+class TestGenerateImageTask:
+    """Tests for the Celery image generation task."""
+
+    def test_generate_image_task_uses_style_manager_prompts(self):
+        """Task should use StyleManager's current prompt API."""
+        image = Image.new("RGB", (64, 64), color="white")
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG")
+        image_bytes = buffer.getvalue()
+
+        mock_storage = MagicMock()
+        mock_storage._bucket = "scribbly-dev"
+        mock_storage._client.get_object.return_value = {
+            "Body": BytesIO(image_bytes),
+        }
+        mock_storage.get_presigned_url.return_value = "https://example.com/result.png"
+
+        mock_task_service = MagicMock()
+        mock_pipeline = MagicMock()
+        mock_pipeline.generate.return_value = image
+        mock_style_manager = MagicMock()
+        mock_style_manager.get_prompts.return_value = ("pixar flowers", "blurry")
+        mock_style_manager.get_default_settings.return_value = {
+            "num_steps": 30,
+            "guidance_scale": 8.5,
+        }
+
+        with patch("app.tasks.generate.StorageService", return_value=mock_storage), patch(
+            "app.tasks.generate.TaskService", return_value=mock_task_service
+        ), patch("app.tasks.generate.StyleManager", return_value=mock_style_manager), patch(
+            "app.tasks.generate.InferencePipeline", return_value=mock_pipeline
+        ), patch(
+            "app.tasks.generate.resolve_torch_device",
+            return_value=("cuda", "float16"),
+        ), patch(
+            "app.tasks.generate.settings"
+        ) as mock_settings:
+            mock_settings.GPU_ENABLED = True
+
+            from app.tasks.generate import generate_image_task
+
+            generate_image_task.run(
+                task_id="task-123",
+                upload_id="upload-123",
+                style_id="pixar_3d",
+                custom_prompt="flowers",
+                user_id="test-user-123",
+            )
+
+        mock_style_manager.get_prompts.assert_called_once_with("pixar_3d", "flowers")
+        mock_style_manager.get_default_settings.assert_called_once_with("pixar_3d")
+        mock_pipeline.generate.assert_called_once_with(
+            image=image,
+            prompt="pixar flowers",
+            negative_prompt="blurry",
+            num_steps=30,
+            guidance_scale=8.5,
+            image_size=512,
+        )

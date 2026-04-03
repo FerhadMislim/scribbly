@@ -30,6 +30,7 @@ def generate_image_task(
     style_id: str,
     custom_prompt: str | None,
     user_id: str,
+    preferred_device: str = "auto",
 ) -> None:
     """
     Generate styled image from uploaded artwork.
@@ -44,13 +45,13 @@ def generate_image_task(
     import sys
     from pathlib import Path
 
-    import torch
-
     sys.path.insert(0, str(Path(__file__).parent.parent.parent / "ai-engine"))
 
+    from device import resolve_torch_device
     from pipeline import InferencePipeline
     from style_manager import StyleManager
 
+    from app.config import settings
     from app.services.storage import StorageService
     from app.services.task import TaskService
 
@@ -81,29 +82,30 @@ def generate_image_task(
         input_image = Image.open(BytesIO(image_data))
 
         style_manager = StyleManager()
-        style = style_manager.get_style(style_id)
-        style_prompt = style.prompt if style else ""
+        prompt, negative_prompt = style_manager.get_prompts(style_id, custom_prompt)
+        generation_settings = style_manager.get_default_settings(style_id)
 
-        prompt = custom_prompt or style_prompt or "a beautiful artwork"
-        negative_prompt = style.negative_prompt if style else ""
+        device_preference = "cuda" if settings.GPU_ENABLED else preferred_device
+        device, dtype = resolve_torch_device(device_preference)
 
         logger.info(f"Running inference for task {task_id} with style {style_id}")
         logger.info(f"Prompt: {prompt}")
+        logger.info(f"Resolved inference device: {device}")
 
         pipeline = InferencePipeline(
             controlnet_id="lllyasviel/control_v11p_sd15_scribble",
-            device="cpu",
-            dtype=torch.float32,
-            enable_xformers=False,
-            enable_cpu_offload=False,
+            device=device,
+            dtype=dtype,
+            enable_xformers=device == "cuda",
+            enable_cpu_offload=device == "cuda",
         )
 
         result = pipeline.generate(
             image=input_image,
             prompt=prompt,
             negative_prompt=negative_prompt,
-            num_steps=20,
-            guidance_scale=7.5,
+            num_steps=generation_settings.get("num_steps", 20),
+            guidance_scale=generation_settings.get("guidance_scale", 7.5),
             image_size=512,
         )
 

@@ -12,11 +12,54 @@ from typing import Optional
 
 import torch
 from PIL import Image
+
+class _TorchXpuCompat:
+    """Compatibility shim for torch builds without XPU support."""
+
+    @staticmethod
+    def empty_cache() -> None:
+        return None
+
+    @staticmethod
+    def is_available() -> bool:
+        return False
+
+    @staticmethod
+    def device_count() -> int:
+        return 0
+
+    @staticmethod
+    def current_device() -> int:
+        return 0
+
+    @staticmethod
+    def manual_seed(seed: int | None = None) -> None:
+        return None
+
+    @staticmethod
+    def manual_seed_all(seed: int | None = None) -> None:
+        return None
+
+    def __getattr__(self, _name: str):
+        return lambda *args, **kwargs: None
+
+
+# Newer diffusers releases may probe torch.xpu even on CUDA-only builds.
+# Provide a lightweight stub so CUDA inference can proceed on torch builds
+# that do not expose the XPU backend.
+if not hasattr(torch, "xpu"):
+    torch.xpu = _TorchXpuCompat()
+
 from diffusers import (
     StableDiffusionControlNetPipeline,
     ControlNetModel,
     DDIMScheduler,
 )
+
+try:
+    from ai_engine.device import resolve_torch_device
+except ImportError:
+    from device import resolve_torch_device
 
 logger = logging.getLogger(__name__)
 
@@ -55,12 +98,16 @@ class InferencePipeline:
             enable_cpu_offload: Enable CPU offload for low VRAM GPUs
             models_dir: Local models directory path
         """
+        resolved_device, resolved_dtype = resolve_torch_device(device)
+
         self.model_id = model_id
         self.controlnet_id = controlnet_id
-        self.device = device
+        self.device = resolved_device
         self.dtype = dtype
+        if device in (None, "auto") or (device == "cuda" and resolved_device == "cpu"):
+            self.dtype = resolved_dtype
         self.enable_xformers = enable_xformers
-        self.enable_cpu_offload = enable_cpu_offload
+        self.enable_cpu_offload = enable_cpu_offload and self.device == "cuda"
         self.models_dir = models_dir or Path(__file__).parent / "models"
 
         self._pipeline: Optional[StableDiffusionControlNetPipeline] = None
@@ -109,7 +156,6 @@ class InferencePipeline:
             str(model_path) if model_path else self.model_id,
             controlnet=controlnet,
             torch_dtype=self.dtype,
-            safety_checker=None,  # Disable for faster inference
         )
 
         # Move to device
@@ -347,8 +393,7 @@ def create_pipeline(
     Returns:
         Configured InferencePipeline instance
     """
-    if device is None:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+    resolved_device, resolved_dtype = resolve_torch_device(device)
 
     configs = {
         "sd15": {
@@ -365,12 +410,10 @@ def create_pipeline(
         raise ValueError(f"Unknown model: {model}. Use: {list(configs.keys())}")
 
     config = configs[model]
-    dtype = torch.float16 if device == "cuda" else torch.float32
-
     return InferencePipeline(
         model_id=config["model_id"],
         controlnet_id=config["controlnet_id"],
-        device=device,
-        dtype=dtype,
+        device=resolved_device,
+        dtype=resolved_dtype,
         models_dir=models_dir,
     )
