@@ -96,6 +96,26 @@ styles:
     thumbnail_url: "/docs/style-samples/sketch_colored.png"
 
   # ---------------------
+  # Hand-Drawn Pencil
+  # ---------------------
+  - id: hand_drawn_pencil
+    display_name: "Hand-Drawn Pencil"
+    description: "Graphite pencil sketch with natural paper texture"
+    positive_prompt: >
+      hand-drawn graphite pencil sketch, expressive pencil linework,
+      visible shading strokes, sketchbook paper texture, soft smudging,
+      natural cross-hatching, detailed contour drawing, monochrome,
+      artisanal pencil illustration, refined hand-rendered look
+    negative_prompt: >
+      dark, scary, violent, ugly, deformed, realistic photo, nsfw,
+      horror, colorful paint, watercolor, glossy digital art, 3d render,
+      marker lines, inked comic style, oversaturated
+    recommended_steps: 28
+    guidance_scale: 7.5
+    recommended_model: sd15
+    thumbnail_url: "/docs/style-samples/hand_drawn_pencil.png"
+
+  # ---------------------
   # Watercolor Paint
   # ---------------------
   - id: watercolor
