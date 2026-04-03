@@ -1,9 +1,7 @@
 # ===========================================
-# Scribbly Backend GPU - Docker Image
-# FastAPI application with CUDA + PyTorch support
+# Scribbly Celery Worker - GPU Docker Image
+# Handles async image generation tasks with CUDA support
 # ===========================================
-# Build: docker build -f infra/docker/Dockerfile.backend-gpu -t scribbly/backend-gpu .
-# Run:  docker run --gpus all scribbly/backend-gpu
 
 FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
 
@@ -11,7 +9,7 @@ FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
 # Labels
 # ---------------------
 LABEL maintainer="Scribbly Team"
-LABEL description="Scribbly Backend API (GPU)"
+LABEL description="Scribbly Celery Worker (GPU)"
 LABEL version="1.0.0"
 
 # ---------------------
@@ -58,28 +56,18 @@ RUN pip install --no-cache-dir \
     --index-url https://download.pytorch.org/whl/cu121
 
 # ---------------------
-# Install Python dependencies without replacing the CUDA-enabled torch build
-COPY backend/pyproject.toml /app/pyproject.toml
+# Install Python dependencies
+# ---------------------
 COPY backend/requirements.txt /app/requirements.txt
-RUN grep -Ev '^(torch|torchvision|torchaudio)\b' requirements.txt | uv pip install --system -r /dev/stdin
+RUN grep -v '^torch' requirements.txt | uv pip install --system -r /dev/stdin
 
 # ---------------------
 # Copy application
 # ---------------------
 COPY backend/app/ /app/
+COPY ai-engine/ /app/ai-engine/
 
 # ---------------------
-# Expose port
+# Run celery worker
 # ---------------------
-EXPOSE 8000
-
-# ---------------------
-# Health check
-# ---------------------
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
-
-# ---------------------
-# Run application
-# ---------------------
-CMD ["python3", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["celery", "-A", "app.celery_app", "worker", "--loglevel=info"]
