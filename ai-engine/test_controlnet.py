@@ -51,7 +51,7 @@ def test_controlnet_loading(device: str = "cuda"):
     if not available:
         print("\n❌ No ControlNet models found!")
         print("\nDownload with:")
-        print("  bash scripts/download_models.sh")
+        print("  bash ai-engine/scripts/download_models.sh")
         return False
 
     try:

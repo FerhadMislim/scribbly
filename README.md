@@ -75,7 +75,7 @@ Visit `http://localhost:3000` — Scribbly is running! 🎉
 ### Download AI Models
 
 ```bash
-bash scripts/download_models.sh
+bash ai-engine/scripts/download_models.sh
 ```
 
 This downloads SDXL, SD1.5, and the ControlNet Scribble model (~10GB total).

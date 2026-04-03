@@ -9,6 +9,10 @@ YELLOW := \033[0;33m
 BLUE := \033[0;34m
 NC := \033[0m # No Color
 
+# Docker Compose command detection
+DOCKER_COMPOSE := $(shell if command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then echo "docker compose"; fi)
+DOCKER_BIN := $(shell command -v docker 2>/dev/null)
+
 # Default target
 .DEFAULT_GOAL := help
 
@@ -96,9 +100,46 @@ dev: docker
 	@make dev-backend & make dev-web
 
 .PHONY: docker
-docker:
+.PHONY: compose-check
+.PHONY: env-check
+compose-check:
+	@if [ -z "$(DOCKER_BIN)" ]; then \
+		echo "$(YELLOW)Docker is not installed. Install Docker Engine or Docker Desktop first.$(NC)"; \
+		exit 1; \
+	fi
+	@if ! docker info >/dev/null 2>&1; then \
+		echo "$(YELLOW)Docker is installed, but your user cannot access the Docker daemon.$(NC)"; \
+		echo "$(YELLOW)Run 'sudo usermod -aG docker $$USER' once, then start a new shell or run 'newgrp docker'.$(NC)"; \
+		exit 1; \
+	fi
+	@if [ -z "$(DOCKER_COMPOSE)" ]; then \
+		echo "$(YELLOW)Docker Compose is not installed. Use Docker Desktop or install either 'docker compose' or 'docker-compose'.$(NC)"; \
+		exit 1; \
+	fi
+
+env-check:
+	@if [ ! -f backend/.env ]; then \
+		if [ -f backend/.env.example ]; then \
+			cp backend/.env.example backend/.env; \
+			echo "$(GREEN)✓ Created backend/.env from backend/.env.example$(NC)"; \
+		else \
+			echo "$(YELLOW)Missing backend/.env and backend/.env.example$(NC)"; \
+			exit 1; \
+		fi; \
+	fi
+	@if [ ! -f web/.env ]; then \
+		if [ -f web/.env.example ]; then \
+			cp web/.env.example web/.env; \
+			echo "$(GREEN)✓ Created web/.env from web/.env.example$(NC)"; \
+		else \
+			echo "$(YELLOW)Missing web/.env and web/.env.example$(NC)"; \
+			exit 1; \
+		fi; \
+	fi
+
+docker: compose-check env-check
 	@echo "$(BLUE)Starting Docker services...$(NC)"
-	@docker-compose up -d
+	@$(DOCKER_COMPOSE) up -d
 	@echo "$(GREEN)✓ Docker services started$(NC)"
 
 # ===========================================
@@ -137,15 +178,15 @@ clean:
 	@echo "$(GREEN)✓ Cleaned!$(NC)"
 
 .PHONY: docker-build
-docker-build:
+docker-build: compose-check
 	@echo "$(BLUE)Building Docker images...$(NC)"
-	@docker-compose build
+	@$(DOCKER_COMPOSE) build
 
 .PHONY: docker-logs
-docker-logs:
-	@docker-compose logs -f
+docker-logs: compose-check
+	@$(DOCKER_COMPOSE) logs -f
 
 .PHONY: download-models
 download-models:
 	@echo "$(BLUE)Downloading AI models...$(NC)"
-	@bash scripts/download_models.sh
+	@bash ai-engine/scripts/download_models.sh
