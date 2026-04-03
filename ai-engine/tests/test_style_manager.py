@@ -215,6 +215,7 @@ class TestStyleManagerIntegration:
             "storybook",
             "soft_illustration",
             "sketch_colored",
+            "hand_drawn_pencil",
             "watercolor",
             "comic",
         ]

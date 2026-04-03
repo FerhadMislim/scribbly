@@ -57,7 +57,7 @@ def generate_image(upload_id: str, style: str, prompt: str) -> str:
         json={
             "upload_id": upload_id,
             "style_id": style,
-            "prompt": prompt,
+            "custom_prompt": prompt,
         },
         headers={"X-User-Id": TEST_USER},
     )

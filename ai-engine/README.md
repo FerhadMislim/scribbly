@@ -27,7 +27,7 @@ pip install -r requirements.txt
 
 ```bash
 # Download base models and ControlNet
-bash scripts/download_models.sh
+bash ai-engine/scripts/download_models.sh
 ```
 
 This will download:

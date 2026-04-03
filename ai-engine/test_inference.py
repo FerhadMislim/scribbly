@@ -51,7 +51,7 @@ def test_inference(device: str = "cuda"):
     if not check_models_exist():
         print("\n❌ Models not found!")
         print("\nDownload models with:")
-        print("  bash scripts/download_models.sh")
+        print("  bash ai-engine/scripts/download_models.sh")
         return False
 
     try:

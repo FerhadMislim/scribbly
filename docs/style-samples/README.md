@@ -11,6 +11,7 @@ This directory contains sample images for each art style.
 | storybook | Storybook | Pending |
 | soft_illustration | Soft Illustration | Pending |
 | sketch_colored | Colored Pencil | Pending |
+| hand_drawn_pencil | Hand-Drawn Pencil | Pending |
 | watercolor | Watercolor | Pending |
 | comic | Comic Book | Pending |
 

@@ -94,6 +94,16 @@ class TestInferencePipeline:
         assert pipe.model_id == "runwayml/stable-diffusion-v1-5"
         assert pipe.controlnet_id == "lllyasviel/control_v11p_sd15_scribble"
 
+    def test_create_pipeline_auto_uses_cpu_without_cuda(self):
+        """Test auto device falls back to CPU when CUDA is unavailable."""
+        from pipeline import create_pipeline
+
+        with patch("torch.cuda.is_available", return_value=False):
+            pipe = create_pipeline(model="sd15")
+
+        assert pipe.device == "cpu"
+        assert pipe.dtype == torch.float32
+
     def test_create_pipeline_unknown_model(self):
         """Test factory function raises error for unknown model."""
         from pipeline import create_pipeline

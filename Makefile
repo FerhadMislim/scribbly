@@ -9,6 +9,17 @@ YELLOW := \033[0;33m
 BLUE := \033[0;34m
 NC := \033[0m # No Color
 
+# Docker Compose command detection
+DOCKER_COMPOSE := $(shell if command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then echo "docker compose"; fi)
+DOCKER_BIN := $(shell command -v docker 2>/dev/null)
+HAS_NVIDIA_GPU := $(shell if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1; then echo "true"; else echo "false"; fi)
+HAS_NVIDIA_CONTAINER_TOOLKIT := $(shell if command -v nvidia-ctk >/dev/null 2>&1; then echo "true"; else echo "false"; fi)
+DOCKER_GPU_READY := $(if $(filter true,$(HAS_NVIDIA_GPU) $(HAS_NVIDIA_CONTAINER_TOOLKIT)),true,false)
+BACKEND_DOCKERFILE ?= $(if $(filter true,$(DOCKER_GPU_READY)),infra/docker/Dockerfile.backend-gpu,infra/docker/Dockerfile.backend-cpu)
+CELERY_DOCKERFILE ?= $(if $(filter true,$(DOCKER_GPU_READY)),infra/docker/Dockerfile.celery-gpu,infra/docker/Dockerfile.celery)
+GPU_ENABLED ?= $(DOCKER_GPU_READY)
+GPU_COUNT ?= $(if $(filter true,$(DOCKER_GPU_READY)),all,)
+
 # Default target
 .DEFAULT_GOAL := help
 
@@ -39,6 +50,7 @@ help:
 	@echo ""
 	@echo "$(GREEN)Utilities$(NC)"
 	@echo "  make clean            Remove build artifacts and caches"
+	@echo "  make docker-rebuild   Recreate Docker stack (down, build, up)"
 	@echo "  make docker-build     Build Docker images"
 	@echo "  make docker-logs     View Docker logs"
 	@echo ""
@@ -96,9 +108,61 @@ dev: docker
 	@make dev-backend & make dev-web
 
 .PHONY: docker
-docker:
+.PHONY: compose-check
+.PHONY: env-check
+compose-check:
+	@if [ -z "$(DOCKER_BIN)" ]; then \
+		echo "$(YELLOW)Docker is not installed. Install Docker Engine or Docker Desktop first.$(NC)"; \
+		exit 1; \
+	fi
+	@if ! docker info >/dev/null 2>&1; then \
+		SOCK_GROUP="$$(stat -c '%G' /var/run/docker.sock 2>/dev/null || true)"; \
+		echo "$(YELLOW)Docker is installed, but your user cannot access the Docker daemon.$(NC)"; \
+		if [ -n "$$SOCK_GROUP" ] && [ "$$SOCK_GROUP" != "UNKNOWN" ]; then \
+			echo "$(YELLOW)Docker socket group: $$SOCK_GROUP$(NC)"; \
+			echo "$(YELLOW)If needed, run 'sudo usermod -aG $$SOCK_GROUP $$USER' once, then start a new shell and restart VS Code.$(NC)"; \
+		else \
+			echo "$(YELLOW)If needed, run 'sudo usermod -aG docker $$USER' once, then start a new shell and restart VS Code.$(NC)"; \
+		fi; \
+		echo "$(YELLOW)Also verify that VS Code is using the same Docker context and socket as this shell: 'docker context ls' and DOCKER_HOST.$(NC)"; \
+		exit 1; \
+	fi
+	@if [ -z "$(DOCKER_COMPOSE)" ]; then \
+		echo "$(YELLOW)Docker Compose is not installed. Use Docker Desktop or install either 'docker compose' or 'docker-compose'.$(NC)"; \
+		exit 1; \
+	fi
+
+env-check:
+	@if [ ! -f backend/.env ]; then \
+		if [ -f backend/.env.example ]; then \
+			cp backend/.env.example backend/.env; \
+			echo "$(GREEN)✓ Created backend/.env from backend/.env.example$(NC)"; \
+		else \
+			echo "$(YELLOW)Missing backend/.env and backend/.env.example$(NC)"; \
+			exit 1; \
+		fi; \
+	fi
+	@if [ ! -f web/.env ]; then \
+		if [ -f web/.env.example ]; then \
+			cp web/.env.example web/.env; \
+			echo "$(GREEN)✓ Created web/.env from web/.env.example$(NC)"; \
+		else \
+			echo "$(YELLOW)Missing web/.env and web/.env.example$(NC)"; \
+			exit 1; \
+		fi; \
+	fi
+
+docker: compose-check env-check
 	@echo "$(BLUE)Starting Docker services...$(NC)"
-	@docker-compose up -d
+	@echo "$(YELLOW)Backend Dockerfile: $(BACKEND_DOCKERFILE)$(NC)"
+	@echo "$(YELLOW)Celery Dockerfile: $(CELERY_DOCKERFILE)$(NC)"
+	@echo "$(YELLOW)Host GPU detected: $(HAS_NVIDIA_GPU)$(NC)"
+	@echo "$(YELLOW)NVIDIA Container Toolkit installed: $(HAS_NVIDIA_CONTAINER_TOOLKIT)$(NC)"
+	@if [ "$(HAS_NVIDIA_GPU)" = "true" ] && [ "$(HAS_NVIDIA_CONTAINER_TOOLKIT)" != "true" ]; then \
+		echo "$(YELLOW)GPU hardware is available, but Docker GPU support is not installed.$(NC)"; \
+		echo "$(YELLOW)Install NVIDIA Container Toolkit, then rerun 'make docker'.$(NC)"; \
+	fi
+	@BACKEND_DOCKERFILE=$(BACKEND_DOCKERFILE) CELERY_DOCKERFILE=$(CELERY_DOCKERFILE) GPU_ENABLED=$(GPU_ENABLED) GPU_COUNT=$(GPU_COUNT) $(DOCKER_COMPOSE) up -d
 	@echo "$(GREEN)✓ Docker services started$(NC)"
 
 # ===========================================
@@ -137,15 +201,24 @@ clean:
 	@echo "$(GREEN)✓ Cleaned!$(NC)"
 
 .PHONY: docker-build
-docker-build:
+docker-build: compose-check
 	@echo "$(BLUE)Building Docker images...$(NC)"
-	@docker-compose build
+	@BACKEND_DOCKERFILE=$(BACKEND_DOCKERFILE) CELERY_DOCKERFILE=$(CELERY_DOCKERFILE) GPU_ENABLED=$(GPU_ENABLED) GPU_COUNT=$(GPU_COUNT) $(DOCKER_COMPOSE) build
+
+.PHONY: docker-down
+docker-down: compose-check
+	@echo "$(BLUE)Stopping Docker services...$(NC)"
+	@BACKEND_DOCKERFILE=$(BACKEND_DOCKERFILE) CELERY_DOCKERFILE=$(CELERY_DOCKERFILE) GPU_ENABLED=$(GPU_ENABLED) GPU_COUNT=$(GPU_COUNT) $(DOCKER_COMPOSE) down
+	@echo "$(GREEN)✓ Docker services stopped$(NC)"
+
+.PHONY: docker-rebuild
+docker-rebuild: docker-down docker-build docker
 
 .PHONY: docker-logs
-docker-logs:
-	@docker-compose logs -f
+docker-logs: compose-check
+	@BACKEND_DOCKERFILE=$(BACKEND_DOCKERFILE) CELERY_DOCKERFILE=$(CELERY_DOCKERFILE) GPU_ENABLED=$(GPU_ENABLED) GPU_COUNT=$(GPU_COUNT) $(DOCKER_COMPOSE) logs -f
 
 .PHONY: download-models
 download-models:
 	@echo "$(BLUE)Downloading AI models...$(NC)"
-	@bash scripts/download_models.sh
+	@bash ai-engine/scripts/download_models.sh

@@ -3,10 +3,12 @@ Generate router for image generation endpoints.
 """
 
 import uuid
-from enum import StrEnum
+import sys
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.config import settings
 from app.dependencies import get_current_user_id
 from app.schemas.task import (
     GenerateImageRequest,
@@ -18,16 +20,9 @@ from app.services.task import TaskService, get_task_service
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 
-
-class StyleId(StrEnum):
-    """Valid style IDs."""
-
-    PIXAR_3D = "pixar_3d"
-    ANIME = "anime"
-    WATERCOLOR = "watercolor"
-    SKETCH = "sketch"
-    OIL_PAINTING = "oil_painting"
-    CARTOON = "cartoon"
+AI_ENGINE_PATH = Path(__file__).resolve().parents[2] / "ai-engine"
+if str(AI_ENGINE_PATH) not in sys.path:
+    sys.path.insert(0, str(AI_ENGINE_PATH))
 
 
 @router.post(
@@ -53,15 +48,15 @@ async def generate_image(
             detail="Authentication required",
         )
 
-    # Validate style
-    try:
-        StyleId(request.style_id)
-    except ValueError:
-        valid_styles = [s.value for s in StyleId]
+    from style_manager import StyleManager
+
+    style_manager = StyleManager()
+    valid_styles = style_manager.get_style_ids()
+    if request.style_id not in valid_styles:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid style_id: {request.style_id}. Valid: {', '.join(valid_styles)}",
-        ) from None
+        )
 
     # Check upload exists - try both .png and .jpeg
     upload_key_png = f"uploads/{current_user}/{request.upload_id}.png"
@@ -86,6 +81,7 @@ async def generate_image(
         style_id=request.style_id,
         custom_prompt=request.custom_prompt,
         user_id=current_user,
+        preferred_device="cuda" if settings.GPU_ENABLED else "auto",
     )
 
     return GenerateImageResponse(
