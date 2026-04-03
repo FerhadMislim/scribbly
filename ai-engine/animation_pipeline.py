@@ -16,6 +16,11 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+try:
+    from ai_engine.device import resolve_torch_device
+except ImportError:
+    from device import resolve_torch_device
+
 
 class AnimationPipeline:
     """
@@ -41,9 +46,11 @@ class AnimationPipeline:
             motion_adapter_id: AnimateDiff motion adapter model
             device: Device to run on ("cuda" or "cpu")
         """
+        resolved_device, _ = resolve_torch_device(device)
+
         self._model_id = model_id
         self._motion_adapter_id = motion_adapter_id
-        self._device = device
+        self._device = resolved_device
 
         self._pipeline = None
         self._is_loaded = False
@@ -244,7 +251,7 @@ def export_mp4(
 def create_animation_pipeline(
     model_id: str = "runwayml/stable-diffusion-v1-5",
     motion_adapter_id: str = "guoyww/animatediff-motion-adapter-v1-5-2",
-    device: str = "cuda",
+    device: str = "auto",
 ) -> AnimationPipeline:
     """
     Factory function to create an AnimationPipeline.

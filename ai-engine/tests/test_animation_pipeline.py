@@ -42,11 +42,12 @@ class TestAnimationPipelineInit:
         """Test initialization with default parameters."""
         from animation_pipeline import AnimationPipeline
 
-        pipe = AnimationPipeline()
+        with patch("torch.cuda.is_available", return_value=False):
+            pipe = AnimationPipeline()
 
         assert pipe._model_id == "runwayml/stable-diffusion-v1-5"
         assert pipe._motion_adapter_id == "guoyww/animatediff-motion-adapter-v1-5-2"
-        assert pipe._device == "cuda"
+        assert pipe._device == "cpu"
         assert not pipe.is_loaded
 
     def test_init_custom_params(self):

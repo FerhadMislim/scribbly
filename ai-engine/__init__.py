@@ -10,6 +10,11 @@ except ImportError:
     from pipeline import InferencePipeline, create_pipeline
 
 try:
+    from ai_engine.device import resolve_torch_device
+except ImportError:
+    from device import resolve_torch_device
+
+try:
     from ai_engine.style_manager import StyleManager, create_style_manager
 except ImportError:
     from style_manager import StyleManager, create_style_manager
@@ -17,6 +22,7 @@ except ImportError:
 __all__ = [
     "InferencePipeline",
     "create_pipeline",
+    "resolve_torch_device",
     "StyleManager",
     "create_style_manager",
 ]
